@@ -8,7 +8,6 @@ TimerWindow::TimerWindow(QWidget *parent)
     , ui(new Ui::TimerWindow)
 {
     ui->setupUi(this);
-    qDebug() << "loaded window successfully";
 }
 
 TimerWindow::~TimerWindow()
@@ -20,8 +19,9 @@ TimerWindow::~TimerWindow()
 void TimerWindow::on_inputTime_editingFinished()
 {
     // TODO
-    qDebug() << "return pressed...";
-    qDebug() << "second line test output";
+    qDebug() << "editing inputTime finished...";
+    qDebug() << "   raw input: " << ui->inputTime->text();
+    qDebug() << "revised time: " << ui->inputTime->text();
     // << widget << "at position" << widget->pos();
 }
 

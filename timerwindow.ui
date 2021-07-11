@@ -33,6 +33,18 @@
     <bool>true</bool>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="leftMargin">
+     <number>20</number>
+    </property>
+    <property name="topMargin">
+     <number>20</number>
+    </property>
+    <property name="rightMargin">
+     <number>20</number>
+    </property>
+    <property name="bottomMargin">
+     <number>20</number>
+    </property>
     <item>
      <widget class="QFrame" name="frameControl">
       <property name="frameShape">
@@ -42,14 +54,26 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <property name="leftMargin">
+        <number>20</number>
+       </property>
        <property name="topMargin">
-        <number>15</number>
+        <number>20</number>
+       </property>
+       <property name="rightMargin">
+        <number>20</number>
        </property>
        <property name="bottomMargin">
-        <number>15</number>
+        <number>20</number>
        </property>
        <item>
         <widget class="QLineEdit" name="lineEdit">
+         <property name="focusPolicy">
+          <enum>Qt::ClickFocus</enum>
+         </property>
          <property name="text">
           <string>title</string>
          </property>
