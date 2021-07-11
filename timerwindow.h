@@ -15,6 +15,9 @@ public:
     TimerWindow(QWidget *parent = nullptr);
     ~TimerWindow();
 
+private slots:
+    void on_inputTime_editingFinished();
+
 private:
     Ui::TimerWindow *ui;
 };
