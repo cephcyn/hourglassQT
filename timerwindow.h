@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "timer.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class TimerWindow; }
 QT_END_NAMESPACE
@@ -16,9 +18,14 @@ public:
     ~TimerWindow();
 
 private slots:
-    void on_inputTime_editingFinished();
+    void on_inputTime_returnPressed();
+
+    void on_pushToggle_clicked();
+
+    void on_pushReset_clicked();
 
 private:
     Ui::TimerWindow *ui;
+
 };
 #endif // TIMERWINDOW_H

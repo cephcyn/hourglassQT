@@ -17,9 +17,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
+    timer.cpp \
     timerwindow.cpp
 
 HEADERS += \
+    timer.h \
     timerwindow.h
 
 FORMS += \
