@@ -38,6 +38,12 @@ void TimerWindow::on_pushToggle_clicked()
 {
     // TODO
     qDebug() << "pushToggle pressed...";
+    TimerWindow::ui->progressBar->setMaximum(
+                TimerWindow::timer.int_total_duration()
+    );
+    TimerWindow::ui->progressBar->setValue(
+                TimerWindow::timer.int_remain_duration()
+    );
 }
 
 
