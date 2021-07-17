@@ -7,17 +7,19 @@
 class Timer
 {
 public:
+    Timer();
     Timer(QString input);
 
     bool is_valid();
+    QString text_total_duration();
 
 private:
-    bool valid;
     QString input;
+    bool valid;
 
-    quint64 timerSeconds;
-    quint64 timerMinutes;
-    quint64 timerHours;
+    quint64 totalHours;
+    quint64 totalMinutes;
+    quint64 totalSeconds;
 
 };
 

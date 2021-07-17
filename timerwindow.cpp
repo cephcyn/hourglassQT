@@ -9,6 +9,7 @@ TimerWindow::TimerWindow(QWidget *parent)
     , ui(new Ui::TimerWindow)
 {
     TimerWindow::ui->setupUi(this);
+    TimerWindow::timer = Timer();
 }
 
 TimerWindow::~TimerWindow()
@@ -19,16 +20,16 @@ TimerWindow::~TimerWindow()
 void TimerWindow::on_inputTime_returnPressed()
 {
     qDebug() << "inputTime pressed return...";
-    Timer parse = Timer(TimerWindow::ui->inputTime->text());
-    if (!parse.is_valid())
+    TimerWindow::timer = Timer(TimerWindow::ui->inputTime->text());
+    if (! TimerWindow::timer.is_valid())
     {
         // TODO
-        qDebug() << "timer parsed invalid";
+        qDebug() << "input parsed invalid";
     }
     else
     {
         // TODO
-        qDebug() << "timer parsed valid";
+        qDebug() << "input parsed valid";
     }
 }
 

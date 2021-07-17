@@ -27,5 +27,7 @@ private slots:
 private:
     Ui::TimerWindow *ui;
 
+    Timer timer;
+
 };
 #endif // TIMERWINDOW_H
