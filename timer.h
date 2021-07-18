@@ -10,7 +10,13 @@ public:
     Timer();
     Timer(QString input);
 
+    void trigger_start();
+    void trigger_toggle();
+    void trigger_reset();
+
     bool is_valid();
+    bool is_started();
+    bool is_running();
 
     QString text_total_duration();
     QString text_remain_duration();
@@ -21,6 +27,8 @@ public:
 private:
     QString input;
     bool valid;
+    bool isStarted;
+    bool isRunning;
 
     quint64 totalHours;
     quint64 totalMinutes;

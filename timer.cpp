@@ -1,12 +1,15 @@
 #include "timer.h"
 
 #include <QtDebug>
+#include <QTimer>
 
 Timer::Timer()
 {
     // Default constructor creates an empty invalid timer
     Timer::input = "";
     Timer::valid = false;
+    Timer::isStarted = false;
+    Timer::isRunning = false;
     Timer::totalHours = 0;
     Timer::totalMinutes = 0;
     Timer::totalSeconds = 0;
@@ -22,6 +25,8 @@ Timer::Timer(QString input)
 //    Timer::valid = false;
     // TODO this is a temporary default interpretation
     Timer::valid = true;
+    Timer::isStarted = false;
+    Timer::isRunning = false;
     Timer::totalHours = 0;
     Timer::totalMinutes = 0;
     Timer::totalSeconds = 30;
@@ -33,9 +38,43 @@ Timer::Timer(QString input)
     qDebug() << "parsed total duration: " << Timer::text_total_duration();
 }
 
+void Timer::trigger_start()
+{
+    // TODO
+    qDebug() << "called timer trigger_start";
+    Timer::isStarted = true;
+    Timer::isRunning = true;
+}
+
+void Timer::trigger_toggle()
+{
+    // TODO
+    qDebug() << "called timer trigger_toggle";
+    Timer::isStarted = true;
+    Timer::isRunning = ! Timer::isRunning;
+}
+
+void Timer::trigger_reset()
+{
+    // TODO
+    qDebug() << "called timer trigger_reset";
+    Timer::isStarted = false;
+    Timer::isRunning = false;
+}
+
 bool Timer::is_valid()
 {
     return Timer::valid;
+}
+
+bool Timer::is_started()
+{
+    return Timer::isStarted;
+}
+
+bool Timer::is_running()
+{
+    return Timer::isRunning;
 }
 
 QString Timer::text_total_duration()
