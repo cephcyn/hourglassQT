@@ -14,6 +14,8 @@ public:
     void trigger_toggle();
     void trigger_reset();
 
+    void update_state();
+
     bool is_valid();
     bool is_started();
     bool is_running();

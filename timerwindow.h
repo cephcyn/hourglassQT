@@ -28,6 +28,9 @@ private:
     Ui::TimerWindow *ui;
 
     Timer *timer;
+    QTimer *qtimer;
+
+    void update_timer();
 
 };
 #endif // TIMERWINDOW_H

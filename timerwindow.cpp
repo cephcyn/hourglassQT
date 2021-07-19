@@ -16,6 +16,7 @@ TimerWindow::TimerWindow(QWidget *parent)
 TimerWindow::~TimerWindow()
 {
     delete ui;
+    delete timer;
 }
 
 void TimerWindow::on_inputTime_returnPressed()
@@ -59,9 +60,27 @@ void TimerWindow::on_inputTime_returnPressed()
         TimerWindow::ui->progressBar->setValue(
                     TimerWindow::timer->int_remain_duration()
         );
-//        QTimer *qtimer = new QTimer(this);
-//        connect(qtimer, &QTimer::timeout, this, QOverload<>::of(&TimerWindow::update));
-//        qtimer->start(1000);
+        TimerWindow::qtimer = new QTimer(this);
+        connect(TimerWindow::qtimer, &QTimer::timeout, this, &TimerWindow::update_timer);
+        TimerWindow::qtimer->start(1000);
+    }
+}
+
+void TimerWindow::update_timer()
+{
+    // TODO
+    qDebug() << "update";
+    TimerWindow::timer->update_state();
+    TimerWindow::ui->progressBar->setMaximum(
+                TimerWindow::timer->int_total_duration()
+    );
+    TimerWindow::ui->progressBar->setValue(
+                TimerWindow::timer->int_remain_duration()
+    );
+    if (! TimerWindow::timer->is_running())
+    {
+        qDebug() << "timer stopped";
+        TimerWindow::qtimer->stop();
     }
 }
 

@@ -62,6 +62,17 @@ void Timer::trigger_reset()
     Timer::isRunning = false;
 }
 
+void Timer::update_state()
+{
+    // TODO
+    Timer::remainSeconds -= 1;
+    if (Timer::remainSeconds == 0)
+    {
+        Timer::isStarted = false;
+        Timer::isRunning = false;
+    }
+}
+
 bool Timer::is_valid()
 {
     return Timer::valid;
