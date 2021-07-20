@@ -10,6 +10,7 @@ Timer::Timer()
     Timer::valid = false;
     Timer::isStarted = false;
     Timer::isRunning = false;
+    Timer::isFinished = false;
     Timer::totalHours = 0;
     Timer::totalMinutes = 0;
     Timer::totalSeconds = 0;
@@ -22,11 +23,11 @@ Timer::Timer(QString input)
 {
     Timer::input = input;
     // TODO do a proper check for validity / parsing the input
-//    Timer::valid = false;
     // TODO this is a temporary default interpretation
     Timer::valid = true;
     Timer::isStarted = false;
     Timer::isRunning = false;
+    Timer::isFinished = false;
     Timer::totalHours = 0;
     Timer::totalMinutes = 0;
     Timer::totalSeconds = 30;
@@ -44,6 +45,7 @@ void Timer::trigger_start()
     qDebug() << "called timer trigger_start";
     Timer::isStarted = true;
     Timer::isRunning = true;
+    Timer::isFinished = false;
 }
 
 void Timer::trigger_toggle()
@@ -52,6 +54,7 @@ void Timer::trigger_toggle()
     qDebug() << "called timer trigger_toggle";
     Timer::isStarted = true;
     Timer::isRunning = ! Timer::isRunning;
+    Timer::isFinished = false;
 }
 
 void Timer::trigger_reset()
@@ -60,17 +63,37 @@ void Timer::trigger_reset()
     qDebug() << "called timer trigger_reset";
     Timer::isStarted = false;
     Timer::isRunning = false;
+    Timer::isFinished = false;
 }
 
-void Timer::update_state()
+void Timer::increment_second()
 {
-    // TODO
-    Timer::remainSeconds -= 1;
-    if (Timer::remainSeconds == 0)
+    // decrement current remaining time if we're currently running
+    if (Timer::isRunning)
     {
+        if (Timer::remainSeconds > 0) {
+            Timer::remainSeconds -= 1;
+        } else if (Timer::remainMinutes > 0) {
+            Timer::remainMinutes -= 1;
+            Timer::remainSeconds = 60;
+        } else {
+            Timer::remainHours -= 1;
+            Timer::remainMinutes = 60;
+            Timer::remainSeconds = 60;
+        }
+    }
+    // if the timer just reached 0, update timer flags...
+    if (Timer::int_remain_duration() == 0)
+    {
+        if (Timer::isRunning)
+        {
+            // finished "alarm" needs to go off
+            Timer::isFinished = true;
+        }
         Timer::isStarted = false;
         Timer::isRunning = false;
     }
+    // TODO?
 }
 
 bool Timer::is_valid()
@@ -88,18 +111,23 @@ bool Timer::is_running()
     return Timer::isRunning;
 }
 
+bool Timer::is_finished()
+{
+    return Timer::isFinished;
+}
+
 QString Timer::text_total_duration()
 {
     return QString::number(Timer::totalHours) + ":"
-            + QString::number(Timer::totalMinutes) + ":"
-            + QString::number(Timer::totalSeconds);
+            + ("00" + QString::number(Timer::totalMinutes)).right(2) + ":"
+            + ("00" + QString::number(Timer::totalSeconds)).right(2);
 }
 
 QString Timer::text_remain_duration()
 {
     return QString::number(Timer::remainHours) + ":"
-            + QString::number(Timer::remainMinutes) + ":"
-            + QString::number(Timer::remainSeconds);
+            + ("00" + QString::number(Timer::remainMinutes)).right(2) + ":"
+            + ("00" + QString::number(Timer::remainSeconds)).right(2);
 }
 
 quint64 Timer::int_total_duration()

@@ -14,11 +14,12 @@ public:
     void trigger_toggle();
     void trigger_reset();
 
-    void update_state();
+    void increment_second();
 
     bool is_valid();
     bool is_started();
     bool is_running();
+    bool is_finished();
 
     QString text_total_duration();
     QString text_remain_duration();
@@ -31,6 +32,7 @@ private:
     bool valid;
     bool isStarted;
     bool isRunning;
+    bool isFinished;
 
     quint64 totalHours;
     quint64 totalMinutes;

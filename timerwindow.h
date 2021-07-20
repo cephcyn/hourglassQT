@@ -31,6 +31,7 @@ private:
     QTimer *qtimer;
 
     void update_timer();
+    void rerender();
 
 };
 #endif // TIMERWINDOW_H
