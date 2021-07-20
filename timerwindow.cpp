@@ -53,17 +53,12 @@ void TimerWindow::update_timer()
     // TODO
     qDebug() << "update";
     TimerWindow::timer->increment_second();
-    TimerWindow::ui->progressBar->setMaximum(
-                TimerWindow::timer->int_total_duration()
-    );
-    TimerWindow::ui->progressBar->setValue(
-                TimerWindow::timer->int_remain_duration()
-    );
     if (TimerWindow::timer->is_finished())
     {
         qDebug() << "timer alarm went off";
         TimerWindow::qtimer->stop();
     }
+    TimerWindow::rerender();
 }
 
 void TimerWindow::rerender()
@@ -71,20 +66,42 @@ void TimerWindow::rerender()
     // TODO clean text display up?
     if (TimerWindow::timer->is_started())
     {
-        if (TimerWindow::timer->is_running())
-        {
-            TimerWindow::ui->pushToggle->setText("Pause");
+        if (TimerWindow::timer->is_finished()) {
+            // TODO alarm is going off
+            TimerWindow::ui->pushToggle->setText("Start");
+            // update color
+            QPalette p = TimerWindow::ui->progressBar->palette();
+            p.setColor(QPalette::Highlight, Qt::red);
+            TimerWindow::ui->progressBar->setPalette(p);
+            // TODO
+            TimerWindow::ui->progressBar->setMaximum(
+                        TimerWindow::timer->int_total_duration()
+            );
+            TimerWindow::ui->progressBar->setValue(
+                        TimerWindow::timer->int_total_duration()
+            );
         }
-        else
-        {
-            TimerWindow::ui->pushToggle->setText("Resume");
+        else {
+            if (TimerWindow::timer->is_running())
+            {
+                TimerWindow::ui->pushToggle->setText("Pause");
+            }
+            else
+            {
+                TimerWindow::ui->pushToggle->setText("Resume");
+            }
+            // update color
+            QPalette p = TimerWindow::ui->progressBar->palette();
+            p.setColor(QPalette::Highlight, Qt::green);
+            TimerWindow::ui->progressBar->setPalette(p);
+            // TODO
+            TimerWindow::ui->progressBar->setMaximum(
+                        TimerWindow::timer->int_total_duration()
+            );
+            TimerWindow::ui->progressBar->setValue(
+                        TimerWindow::timer->int_remain_duration()
+            );
         }
-        TimerWindow::ui->progressBar->setMaximum(
-                    TimerWindow::timer->int_total_duration()
-        );
-        TimerWindow::ui->progressBar->setValue(
-                    TimerWindow::timer->int_remain_duration()
-        );
     }
     else
     {

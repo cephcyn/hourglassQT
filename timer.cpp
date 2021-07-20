@@ -87,10 +87,9 @@ void Timer::increment_second()
     {
         if (Timer::isRunning)
         {
-            // finished "alarm" needs to go off
+            // finished "alarm" is going off
             Timer::isFinished = true;
         }
-        Timer::isStarted = false;
         Timer::isRunning = false;
     }
     // TODO?
