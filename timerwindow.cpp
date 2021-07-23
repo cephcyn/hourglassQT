@@ -43,8 +43,8 @@ void TimerWindow::on_inputTime_returnPressed()
         // TODO
         qDebug() << "input parsed valid";
         TimerWindow::timer->trigger_start();
-        TimerWindow::rerender();
         TimerWindow::qtimer->start(1000);
+        TimerWindow::rerender();
     }
 }
 
@@ -66,22 +66,41 @@ void TimerWindow::rerender()
     // TODO clean text display up?
     if (TimerWindow::timer->is_started())
     {
-        if (TimerWindow::timer->is_finished()) {
-            // TODO alarm is going off
-            TimerWindow::ui->pushToggle->setText("Start");
-            // update color
+        if (TimerWindow::timer->is_finished())
+        {
+            // update color to alarm color
             QPalette p = TimerWindow::ui->progressBar->palette();
             p.setColor(QPalette::Highlight, Qt::red);
             TimerWindow::ui->progressBar->setPalette(p);
-            // TODO
+            // update progressbar to full / alarm state
             TimerWindow::ui->progressBar->setMaximum(
                         TimerWindow::timer->int_total_duration()
             );
             TimerWindow::ui->progressBar->setValue(
                         TimerWindow::timer->int_total_duration()
             );
+            TimerWindow::ui->progressBar->setFormat(
+                        "Timer done"
+            );
+            // TODO alarm is going off
+            TimerWindow::ui->pushToggle->setText("Start");
         }
-        else {
+        else
+        {
+            // update color to progress color
+            QPalette p = TimerWindow::ui->progressBar->palette();
+            p.setColor(QPalette::Highlight, Qt::green);
+            TimerWindow::ui->progressBar->setPalette(p);
+            // update progressbar to current time remaining
+            TimerWindow::ui->progressBar->setMaximum(
+                        TimerWindow::timer->int_total_duration()
+            );
+            TimerWindow::ui->progressBar->setValue(
+                        TimerWindow::timer->int_remain_duration()
+            );
+            TimerWindow::ui->progressBar->setFormat(
+                        TimerWindow::timer->text_remain_duration()
+            );
             if (TimerWindow::timer->is_running())
             {
                 TimerWindow::ui->pushToggle->setText("Pause");
@@ -90,17 +109,6 @@ void TimerWindow::rerender()
             {
                 TimerWindow::ui->pushToggle->setText("Resume");
             }
-            // update color
-            QPalette p = TimerWindow::ui->progressBar->palette();
-            p.setColor(QPalette::Highlight, Qt::green);
-            TimerWindow::ui->progressBar->setPalette(p);
-            // TODO
-            TimerWindow::ui->progressBar->setMaximum(
-                        TimerWindow::timer->int_total_duration()
-            );
-            TimerWindow::ui->progressBar->setValue(
-                        TimerWindow::timer->int_remain_duration()
-            );
         }
     }
     else
@@ -108,6 +116,7 @@ void TimerWindow::rerender()
         TimerWindow::ui->pushToggle->setText("Start");
         TimerWindow::ui->progressBar->setMaximum(1);
         TimerWindow::ui->progressBar->setValue(0);
+        TimerWindow::ui->progressBar->setFormat("");
     }
 }
 
@@ -116,6 +125,14 @@ void TimerWindow::on_pushToggle_clicked()
     // TODO
     qDebug() << "pushToggle pressed... timer:is_running=" << TimerWindow::timer->is_running();
     TimerWindow::timer->trigger_toggle();
+    if (TimerWindow::timer->is_running())
+    {
+        TimerWindow::qtimer->start(1000);
+    }
+    else
+    {
+        TimerWindow::qtimer->stop();
+    }
     TimerWindow::rerender();
 }
 
@@ -124,5 +141,6 @@ void TimerWindow::on_pushReset_clicked()
     // TODO
     qDebug() << "pushReset pressed...";
     TimerWindow::timer->trigger_reset();
+    TimerWindow::qtimer->stop();
     TimerWindow::rerender();
 }
