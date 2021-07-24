@@ -4,6 +4,8 @@
 #include <QtGlobal>
 #include <QString>
 
+enum TimerType { duration, alarm };
+
 class Timer
 {
 public:
@@ -30,6 +32,7 @@ public:
 private:
     QString input;
     bool valid;
+    TimerType type;
     bool isStarted;
     bool isRunning;
     bool isFinished;
@@ -42,6 +45,7 @@ private:
     quint64 remainMinutes;
     quint64 remainSeconds;
 
+    void construct_finish();
 };
 
 #endif // TIMER_H

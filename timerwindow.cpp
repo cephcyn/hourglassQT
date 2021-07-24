@@ -25,8 +25,6 @@ TimerWindow::~TimerWindow()
 
 void TimerWindow::on_inputTime_returnPressed()
 {
-    // TODO
-    qDebug() << "inputTime pressed return...";
     // clean up previous window state
     // TODO there's gotta be a cleaner way to do this...
     TimerWindow::ui->pushToggle->setText("Start");
@@ -34,29 +32,24 @@ void TimerWindow::on_inputTime_returnPressed()
     TimerWindow::ui->progressBar->setValue(0);
     // parse the user input
     TimerWindow::timer = new Timer(TimerWindow::ui->inputTime->text());
-    if (! TimerWindow::timer->is_valid())
-    {
-        // TODO
-        qDebug() << "input parsed invalid";
-    }
-    else
-    {
-        // TODO
-        qDebug() << "input parsed valid";
-        TimerWindow::timer->trigger_start();
-        TimerWindow::qtimer->start(1000);
-        TimerWindow::rerender();
-    }
+    TimerWindow::timer->trigger_start();
+    TimerWindow::qtimer->start(1000);
+    TimerWindow::rerender();
 }
 
 void TimerWindow::update_timer()
 {
-    // TODO
-    TimerWindow::timer->increment_second();
-    if (TimerWindow::timer->is_finished())
+    if (! TimerWindow::timer->is_valid())
     {
-        qDebug() << "timer alarm went off";
         TimerWindow::qtimer->stop();
+    }
+    else
+    {
+        TimerWindow::timer->increment_second();
+        if (TimerWindow::timer->is_finished())
+        {
+            TimerWindow::qtimer->stop();
+        }
     }
     TimerWindow::rerender();
 }
@@ -130,7 +123,6 @@ void TimerWindow::rerender()
 void TimerWindow::on_pushToggle_clicked()
 {
     // TODO
-    qDebug() << "pushToggle pressed... timer:is_running=" << TimerWindow::timer->is_running();
     TimerWindow::timer->trigger_toggle();
     if (TimerWindow::timer->is_running())
     {
@@ -146,7 +138,6 @@ void TimerWindow::on_pushToggle_clicked()
 void TimerWindow::on_pushReset_clicked()
 {
     // TODO
-    qDebug() << "pushReset pressed...";
     TimerWindow::timer->trigger_reset();
     TimerWindow::qtimer->stop();
     TimerWindow::rerender();
