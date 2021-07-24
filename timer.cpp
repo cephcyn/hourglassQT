@@ -2,14 +2,15 @@
 
 #include <QtDebug>
 #include <QRegularExpression>
+#include <QtMath>
 #include <QTimer>
 
 Timer::Timer()
 {
     // Default constructor creates an empty invalid timer
     Timer::input = "";
-    Timer::type = TimerType::duration;
     Timer::valid = false;
+    Timer::type = TimerType::duration;
     Timer::totalHours = 0;
     Timer::totalMinutes = 0;
     Timer::totalSeconds = 0;
@@ -18,18 +19,24 @@ Timer::Timer()
 
 Timer::Timer(QString input)
 {
-    Timer::input = input.simplified();;
-    // TODO do a proper check for validity / parsing the input
-    // TODO this is a temporary default interpretation
-    Timer::valid = true;
-    Timer::type = TimerType::duration;
-    Timer::totalHours = 0;
-    Timer::totalMinutes = 0;
-    Timer::totalSeconds = 5;
-    // number-only minutes input
+    Timer::input = input.simplified();
+
+    // number-only (zero or positive, integer) of minutes
     // example: "3" -> 0:03:00 duration
     QRegularExpression reMinuteOnly = QRegularExpression("^[0-9]+$");
-    qDebug() << Timer::input << "; minuteOnly =" << reMinuteOnly.match(Timer::input).hasMatch();
+    qDebug() << Timer::input << "; mo =" << reMinuteOnly.match(Timer::input).hasMatch();
+    // short form duration (using :s) mm:ss, hh:mm:ss
+    // example: "2:40" -> 0:02:40 duration
+    // example: "132:03:25" -> 132:03:25 duration
+    QRegularExpression reShortDurationColon = QRegularExpression("^([0-9]+:)?[0-9]+:[0-9]+$");
+    qDebug() << Timer::input << "; sdc =" << reShortDurationColon.match(Timer::input).hasMatch();
+    // short form duration (using .s) mm.ss, hh.mm.ss
+    // example: "2.40" -> 0:02:40 duration
+    // example: "132.03.25" -> 132:03:25 duration
+    QRegularExpression reShortDurationPeriod = QRegularExpression("^([0-9]+\\.)?[0-9]+\\.[0-9]+$");
+    qDebug() << Timer::input << "; sdp =" << reShortDurationPeriod.match(Timer::input).hasMatch();
+
+    // now go through and check if the input matches any supported format...
     if (reMinuteOnly.match(Timer::input).hasMatch())
     {
         Timer::valid = true;
@@ -38,13 +45,72 @@ Timer::Timer(QString input)
         Timer::totalMinutes = Timer::input.toULongLong();
         Timer::totalSeconds = 0;
     }
-    // TODO remove...?
+    else if (reShortDurationColon.match(Timer::input).hasMatch())
+    {
+        Timer::valid = true;
+        Timer::type = TimerType::duration;
+        QStringList pieces = Timer::input.split(":");
+        if (pieces.size() == 2)
+        {
+            // only has minutes and seconds
+            Timer::totalHours = 0;
+            Timer::totalMinutes = pieces[0].toULongLong();
+            Timer::totalSeconds = pieces[1].toULongLong();
+        }
+        else
+        {
+            // has hours, minutes, and seconds
+            Timer::totalHours = pieces[0].toULongLong();
+            Timer::totalMinutes = pieces[1].toULongLong();
+            Timer::totalSeconds = pieces[2].toULongLong();
+        }
+    }
+    else if (reShortDurationPeriod.match(Timer::input).hasMatch())
+    {
+        Timer::valid = true;
+        Timer::type = TimerType::duration;
+        QStringList pieces = Timer::input.split(".");
+        if (pieces.size() == 2)
+        {
+            // only has minutes and seconds
+            Timer::totalHours = 0;
+            Timer::totalMinutes = pieces[0].toULongLong();
+            Timer::totalSeconds = pieces[1].toULongLong();
+        }
+        else
+        {
+            // has hours, minutes, and seconds
+            Timer::totalHours = pieces[0].toULongLong();
+            Timer::totalMinutes = pieces[1].toULongLong();
+            Timer::totalSeconds = pieces[2].toULongLong();
+        }
+    }
+//    else if (false)
+//    {
+//        // TODO
+//        Timer::valid = true;
+//        Timer::type = TimerType::duration;
+//        double numMinutes = Timer::input.toDouble();
+//        Timer::totalHours = 0;
+//        Timer::totalMinutes = qFloor(numMinutes); // Timer::input.toULongLong();
+//        Timer::totalSeconds = qFloor(60 * (numMinutes - Timer::totalMinutes));
+//    }
+    else
+    {
+        // invalid input
+        Timer::valid = false;
+        Timer::type = TimerType::duration;
+        Timer::totalHours = 0;
+        Timer::totalMinutes = 0;
+        Timer::totalSeconds = 0;
+    }
     Timer::construct_finish();
 }
 
 void Timer::construct_finish()
 {
     // do the constructor stuff that always needs to be done
+    // TODO normalize the remainHours, remainMinutes, and remainSeconds to have max 60 in min and sec
     Timer::isStarted = false;
     Timer::isRunning = false;
     Timer::isFinished = false;
