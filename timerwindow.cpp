@@ -28,6 +28,7 @@ void TimerWindow::on_inputTime_returnPressed()
     // TODO
     qDebug() << "inputTime pressed return...";
     // clean up previous window state
+    // TODO there's gotta be a cleaner way to do this...
     TimerWindow::ui->pushToggle->setText("Start");
     TimerWindow::ui->progressBar->setMaximum(1);
     TimerWindow::ui->progressBar->setValue(0);
@@ -51,7 +52,6 @@ void TimerWindow::on_inputTime_returnPressed()
 void TimerWindow::update_timer()
 {
     // TODO
-    qDebug() << "update";
     TimerWindow::timer->increment_second();
     if (TimerWindow::timer->is_finished())
     {
@@ -64,21 +64,28 @@ void TimerWindow::update_timer()
 void TimerWindow::rerender()
 {
     // TODO clean text display up?
-    if (TimerWindow::timer->is_started())
+    if (! TimerWindow::timer->is_valid())
+    {
+        // update progressbar to invalid state
+        QPalette p = TimerWindow::ui->progressBar->palette();
+        p.setColor(QPalette::Highlight, Qt::red);
+        TimerWindow::ui->progressBar->setPalette(p);
+        TimerWindow::ui->progressBar->setMaximum(1);
+        TimerWindow::ui->progressBar->setValue(1);
+        TimerWindow::ui->progressBar->setFormat(
+                    "Input invalid"
+        );
+    }
+    else if (TimerWindow::timer->is_started())
     {
         if (TimerWindow::timer->is_finished())
         {
-            // update color to alarm color
-            QPalette p = TimerWindow::ui->progressBar->palette();
-            p.setColor(QPalette::Highlight, Qt::red);
-            TimerWindow::ui->progressBar->setPalette(p);
             // update progressbar to full / alarm state
-            TimerWindow::ui->progressBar->setMaximum(
-                        TimerWindow::timer->int_total_duration()
-            );
-            TimerWindow::ui->progressBar->setValue(
-                        TimerWindow::timer->int_total_duration()
-            );
+            QPalette p = TimerWindow::ui->progressBar->palette();
+            p.setColor(QPalette::Highlight, Qt::darkRed);
+            TimerWindow::ui->progressBar->setPalette(p);
+            TimerWindow::ui->progressBar->setMaximum(1);
+            TimerWindow::ui->progressBar->setValue(1);
             TimerWindow::ui->progressBar->setFormat(
                         "Timer done"
             );
@@ -87,11 +94,10 @@ void TimerWindow::rerender()
         }
         else
         {
-            // update color to progress color
+            // update progressbar to timer run state
             QPalette p = TimerWindow::ui->progressBar->palette();
-            p.setColor(QPalette::Highlight, Qt::green);
+            p.setColor(QPalette::Highlight, Qt::darkGreen);
             TimerWindow::ui->progressBar->setPalette(p);
-            // update progressbar to current time remaining
             TimerWindow::ui->progressBar->setMaximum(
                         TimerWindow::timer->int_total_duration()
             );
@@ -114,6 +120,7 @@ void TimerWindow::rerender()
     else
     {
         TimerWindow::ui->pushToggle->setText("Start");
+        // update progressbar to non-running state
         TimerWindow::ui->progressBar->setMaximum(1);
         TimerWindow::ui->progressBar->setValue(0);
         TimerWindow::ui->progressBar->setFormat("");

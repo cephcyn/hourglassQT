@@ -30,19 +30,19 @@ Timer::Timer(QString input)
     Timer::isFinished = false;
     Timer::totalHours = 0;
     Timer::totalMinutes = 0;
-    Timer::totalSeconds = 30;
-    Timer::remainHours = 0;
-    Timer::remainMinutes = 0;
-    Timer::remainSeconds = 30;
+    Timer::totalSeconds = 5;
+    Timer::remainHours = Timer::totalHours;
+    Timer::remainMinutes = Timer::totalMinutes;
+    Timer::remainSeconds = Timer::totalSeconds;
     qDebug() << "constructing Timer...";
     qDebug() << "            raw input: " << input;
     qDebug() << "parsed total duration: " << Timer::text_total_duration();
+    qDebug() << "   parsed finish time: " << "TODO not-done-yet";
 }
 
 void Timer::trigger_start()
 {
-    // TODO
-    qDebug() << "called timer trigger_start";
+    qDebug() << "called timer::trigger_start";
     Timer::isStarted = true;
     Timer::isRunning = true;
     Timer::isFinished = false;
@@ -50,24 +50,50 @@ void Timer::trigger_start()
 
 void Timer::trigger_toggle()
 {
-    // TODO
-    qDebug() << "called timer trigger_toggle";
-    Timer::isStarted = true;
-    Timer::isRunning = ! Timer::isRunning;
-    Timer::isFinished = false;
+    qDebug() << "called timer::trigger_toggle";
+    if (Timer::isFinished) {
+        Timer::remainHours = Timer::totalHours;
+        Timer::remainMinutes = Timer::totalMinutes;
+        Timer::remainSeconds = Timer::totalSeconds;
+        Timer::isStarted = true;
+        Timer::isRunning = true;
+        Timer::isFinished = false;
+    }
+    else
+    {
+        Timer::isStarted = true;
+        Timer::isRunning = ! Timer::isRunning;
+        Timer::isFinished = false;
+    }
 }
 
 void Timer::trigger_reset()
 {
-    // TODO
-    qDebug() << "called timer trigger_reset";
+    qDebug() << "called timer::trigger_reset";
     Timer::isStarted = false;
     Timer::isRunning = false;
     Timer::isFinished = false;
+    Timer::remainHours = Timer::totalHours;
+    Timer::remainMinutes = Timer::totalMinutes;
+    Timer::remainSeconds = Timer::totalSeconds;
 }
 
 void Timer::increment_second()
 {
+    if (! Timer::is_valid())
+    {
+        return;
+    }
+    // if the timer just reached 0, update timer flags...
+    if (Timer::int_remain_duration() == 0)
+    {
+        if (Timer::isRunning)
+        {
+            // finished "alarm" is going off
+            Timer::isFinished = true;
+        }
+        Timer::isRunning = false;
+    }
     // decrement current remaining time if we're currently running
     if (Timer::isRunning)
     {
@@ -82,17 +108,6 @@ void Timer::increment_second()
             Timer::remainSeconds = 60;
         }
     }
-    // if the timer just reached 0, update timer flags...
-    if (Timer::int_remain_duration() == 0)
-    {
-        if (Timer::isRunning)
-        {
-            // finished "alarm" is going off
-            Timer::isFinished = true;
-        }
-        Timer::isRunning = false;
-    }
-    // TODO?
 }
 
 bool Timer::is_valid()
