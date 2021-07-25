@@ -147,7 +147,6 @@ void TimerWindow::on_pushToggle_clicked()
 
 void TimerWindow::on_pushReset_clicked()
 {
-    // TODO
     TimerWindow::timer->trigger_reset();
     TimerWindow::qtimer->stop();
     TimerWindow::rerender();

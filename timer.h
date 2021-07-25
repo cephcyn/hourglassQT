@@ -27,6 +27,7 @@ public:
 
     QString text_total_duration();
     QString text_remain_duration();
+    QString text_clock_24();
 
     quint64 int_total_duration();
     quint64 int_remain_duration();
@@ -39,14 +40,19 @@ private:
     bool isRunning;
     bool isFinished;
 
-    quint64 totalHours;
-    quint64 totalMinutes;
-    quint64 totalSeconds;
+    quint64 totalHour;
+    quint64 totalMinute;
+    quint64 totalSecond;
 
-    quint64 remainHours;
-    quint64 remainMinutes;
-    quint64 remainSeconds;
+    quint64 clockHour;
+    quint64 clockMinute;
+    quint64 clockSecond;
 
+    quint64 remainHour;
+    quint64 remainMinute;
+    quint64 remainSecond;
+
+    void construct_invalid();
     void construct_finish();
 };
 
