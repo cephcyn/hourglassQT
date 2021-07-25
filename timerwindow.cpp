@@ -122,15 +122,25 @@ void TimerWindow::rerender()
 
 void TimerWindow::on_pushToggle_clicked()
 {
-    // TODO
-    TimerWindow::timer->trigger_toggle();
-    if (TimerWindow::timer->is_running())
+    if (! TimerWindow::timer->matches_input(TimerWindow::ui->inputTime->text()))
     {
+        // need to re-parse the user input...
+        TimerWindow::timer = new Timer(TimerWindow::ui->inputTime->text());
+        TimerWindow::timer->trigger_start();
         TimerWindow::qtimer->start(1000);
     }
     else
     {
-        TimerWindow::qtimer->stop();
+        // don't need to re-parse user input, use existing timer data
+        TimerWindow::timer->trigger_toggle();
+        if (TimerWindow::timer->is_running())
+        {
+            TimerWindow::qtimer->start(1000);
+        }
+        else
+        {
+            TimerWindow::qtimer->stop();
+        }
     }
     TimerWindow::rerender();
 }

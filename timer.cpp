@@ -207,6 +207,11 @@ void Timer::increment_second()
     }
 }
 
+bool Timer::matches_input(QString text)
+{
+    return text.simplified() == Timer::input;
+}
+
 bool Timer::is_valid()
 {
     return Timer::valid;

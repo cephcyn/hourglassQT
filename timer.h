@@ -18,6 +18,8 @@ public:
 
     void increment_second();
 
+    bool matches_input(QString text);
+
     bool is_valid();
     bool is_started();
     bool is_running();
