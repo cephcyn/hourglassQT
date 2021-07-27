@@ -25,20 +25,15 @@ Timer::Timer(QString input)
                 "^[0-9]+$"
     );
     qDebug() << Timer::input << "; mo =" << reMinuteOnly.match(Timer::input).hasMatch();
-    // short form duration (using :s) mm:ss, hh:mm:ss
+    // short form duration mm:ss, hh:mm:ss, mm.ss, hh.mm.ss
     // example: "2:40" -> 0:02:40 duration
     // example: "132:03:25" -> 132:03:25 duration
-    QRegularExpression reShortDurationColon = QRegularExpression(
-                "^([0-9]+:)?[0-9]+:[0-9]+$"
-    );
-    qDebug() << Timer::input << "; sdc =" << reShortDurationColon.match(Timer::input).hasMatch();
-    // short form duration (using .s) mm.ss, hh.mm.ss
     // example: "2.40" -> 0:02:40 duration
     // example: "132.03.25" -> 132:03:25 duration
-    QRegularExpression reShortDurationPeriod = QRegularExpression(
-                "^([0-9]+\\.)?[0-9]+\\.[0-9]+$"
+    QRegularExpression reShortDuration = QRegularExpression(
+                "^[0-9]+([:.])[0-9]+(\\1[0-9]+)?$"
     );
-    qDebug() << Timer::input << "; sdp =" << reShortDurationPeriod.match(Timer::input).hasMatch();
+    qDebug() << Timer::input << "; sdc =" << reShortDuration.match(Timer::input).hasMatch();
     // specified units with seconds/s, minutes/m, hours/h, days/d, weeks/w, months/mo, years/y
     // can take decimal input as well
     // example: "30 seconds" -> 0:00:30 duration
@@ -55,7 +50,6 @@ Timer::Timer(QString input)
     // example: "2:30 pm" -> soonest 14:30:00 alarm
     // example: "2:30:15 pm" -> soonest 14:30:15 alarm
     // example: "3pm" -> soonest 15:00:00 alarm
-    // TODO
     QRegularExpression reClockTimeColon = QRegularExpression(
                 "^[0-9]+(:[0-9][0-9])?(:[0-9][0-9])? ?(am|pm)$"
     );
@@ -76,31 +70,11 @@ Timer::Timer(QString input)
         Timer::totalMinute = Timer::input.toULongLong();
         Timer::totalSecond = 0;
     }
-    else if (reShortDurationColon.match(Timer::input).hasMatch())
+    else if (reShortDuration.match(Timer::input).hasMatch())
     {
         Timer::valid = true;
         Timer::type = TimerType::duration;
-        QStringList pieces = Timer::input.split(":");
-        if (pieces.size() == 2)
-        {
-            // only has minutes and seconds
-            Timer::totalHour = 0;
-            Timer::totalMinute = pieces[0].toULongLong();
-            Timer::totalSecond = pieces[1].toULongLong();
-        }
-        else
-        {
-            // has hours, minutes, and seconds
-            Timer::totalHour = pieces[0].toULongLong();
-            Timer::totalMinute = pieces[1].toULongLong();
-            Timer::totalSecond = pieces[2].toULongLong();
-        }
-    }
-    else if (reShortDurationPeriod.match(Timer::input).hasMatch())
-    {
-        Timer::valid = true;
-        Timer::type = TimerType::duration;
-        QStringList pieces = Timer::input.split(".");
+        QStringList pieces = Timer::input.split(QRegularExpression("[:.]"));
         if (pieces.size() == 2)
         {
             // only has minutes and seconds
