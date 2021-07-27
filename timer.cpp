@@ -21,10 +21,10 @@ Timer::Timer(QString input)
 
     // number-only (zero or positive, integer) of minutes
     // example: "3" -> 0:03:00 duration
-    QRegularExpression reMinuteOnly = QRegularExpression(
+    QRegularExpression reMinuteOnlyDuration = QRegularExpression(
                 "^[0-9]+$"
     );
-    qDebug() << Timer::input << "; mo =" << reMinuteOnly.match(Timer::input).hasMatch();
+    qDebug() << Timer::input << "; mo =" << reMinuteOnlyDuration.match(Timer::input).hasMatch();
     // short form duration mm:ss, hh:mm:ss, mm.ss, hh.mm.ss
     // example: "2:40" -> 0:02:40 duration
     // example: "132:03:25" -> 132:03:25 duration
@@ -33,13 +33,18 @@ Timer::Timer(QString input)
     QRegularExpression reShortDuration = QRegularExpression(
                 "^[0-9]+([:.])[0-9]+(\\1[0-9]+)?$"
     );
-    qDebug() << Timer::input << "; sdc =" << reShortDuration.match(Timer::input).hasMatch();
-    // specified units with seconds/s, minutes/m, hours/h, days/d, weeks/w, months/mo, years/y
+    qDebug() << Timer::input << "; sd =" << reShortDuration.match(Timer::input).hasMatch();
+    // specified units with seconds/seconds/secs/sec/s, minutes/minute/mins/min/m, hours/hour/hrs/hr/h
     // can take decimal input as well
     // example: "30 seconds" -> 0:00:30 duration
     // example: "5 m" -> 0:05:00 duration
     // example: "10.5h" -> 10:30:00 duration
-    // TODO
+    // TODO add support for days/d, weeks/w, months/mo, years/y ?
+    // TODO implement fully
+    QRegularExpression reUnitDuration = QRegularExpression(
+                "^([0-9]*\\.?[0-9]+) *(seconds|second|secs|sec|s|minutes|minute|mins|min|m|hours|hour|hrs|hr|h)$"
+    );
+    qDebug() << Timer::input << "; ud =" << reUnitDuration.match(Timer::input).hasMatch();
     // combined units using multiple of above timespans
     // example: "5 minutes 20 seconds" -> 0:05:20 duration
     // example: "7 h 15.5 m" -> 7:15:30 duration
@@ -51,7 +56,7 @@ Timer::Timer(QString input)
     // example: "2:30:15 pm" -> soonest 14:30:15 alarm
     // example: "3pm" -> soonest 15:00:00 alarm
     QRegularExpression reClockTimeColon = QRegularExpression(
-                "^[0-9]+(:[0-9][0-9])?(:[0-9][0-9])? ?(am|pm)$"
+                "^[0-9]+(:[0-9][0-9])?(:[0-9][0-9])? *(am|pm)$"
     );
     qDebug() << Timer::input << "; ctc =" << reClockTimeColon.match(Timer::input).hasMatch();
     // clock time (using .) with am/pm, soonest time that matches today or tomorrow
@@ -59,10 +64,10 @@ Timer::Timer(QString input)
     // example: "2.30 pm" -> soonest 14:30:00 alarm
     // example: "2.30.15 pm" -> soonest 14:30:15 alarm
     // example: "3pm" -> soonest 15:00:00 alarm
-    // TODO
+    // TODO, integrate this into ClockTimeColon with regex capture somehow similar to ShortDuration
 
     // now go through and check if the input matches any supported format...
-    if (reMinuteOnly.match(Timer::input).hasMatch())
+    if (reMinuteOnlyDuration.match(Timer::input).hasMatch())
     {
         Timer::valid = true;
         Timer::type = TimerType::duration;
@@ -88,6 +93,40 @@ Timer::Timer(QString input)
             Timer::totalHour = pieces[0].toULongLong();
             Timer::totalMinute = pieces[1].toULongLong();
             Timer::totalSecond = pieces[2].toULongLong();
+        }
+    }
+    else if (reUnitDuration.match(Timer::input).hasMatch())
+    {
+        Timer::valid = true;
+        Timer::type = TimerType::duration;
+        // parse input into the number and unit sections
+        QString subNum = reUnitDuration.match(Timer::input).captured(1);
+        QString subUnit = reUnitDuration.match(Timer::input).captured(2);
+        double doubleNum = subNum.toDouble();
+        qDebug() << "unitduration" << doubleNum << subUnit;
+        if (QRegularExpression("^(seconds|second|secs|sec|s)$").match(subUnit).hasMatch())
+        {
+            // passed seconds
+            Timer::totalHour = 0;
+            Timer::totalMinute = 0;
+            Timer::totalSecond = qFloor(doubleNum);
+        }
+        else if (QRegularExpression("^(minutes|minute|mins|min|m)$").match(subUnit).hasMatch())
+        {
+            // passed minutes
+            Timer::totalHour = 0;
+            Timer::totalMinute = qFloor(doubleNum);
+            doubleNum = 60 * (doubleNum - Timer::totalMinute); // convert to seconds
+            Timer::totalSecond = qFloor(doubleNum);
+        }
+        else if (QRegularExpression("^(hours|hour|hrs|hr|h)$").match(subUnit).hasMatch())
+        {
+            // passed hours
+            Timer::totalHour = qFloor(doubleNum);
+            doubleNum = 60 * (doubleNum - Timer::totalHour); // convert to minutes
+            Timer::totalMinute = qFloor(doubleNum);
+            doubleNum = 60 * (doubleNum - Timer::totalMinute); // convert to seconds
+            Timer::totalSecond = qFloor(doubleNum);
         }
     }
     else if (reClockTimeColon.match(Timer::input).hasMatch())
