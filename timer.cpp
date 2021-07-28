@@ -48,23 +48,21 @@ Timer::Timer(QString input)
                 "^(([0-9]*\\.?[0-9]+) *(seconds|second|secs|sec|s|minutes|minute|mins|min|m|hours|hour|hrs|hr|h) *)+$"
     );
     qDebug() << Timer::input << "; ud =" << reUnitDuration.match(Timer::input).hasMatch();
-    // clock time (using :) with am/pm, soonest time that matches today or tomorrow
+    // clock time (using : or .) with am/pm, soonest time that matches today or tomorrow
     // example: "2 pm" -> soonest 14:00:00 alarm
     // example: "2:30 pm" -> soonest 14:30:00 alarm
     // example: "2:30:15 pm" -> soonest 14:30:15 alarm
     // example: "3pm" -> soonest 15:00:00 alarm
-    QRegularExpression reClockTimeColon = QRegularExpression(
-                "^[0-9]+(:[0-9][0-9])?(:[0-9][0-9])? *(am|pm)$"
-    );
-    qDebug() << Timer::input << "; ctc =" << reClockTimeColon.match(Timer::input).hasMatch();
-    // clock time (using .) with am/pm, soonest time that matches today or tomorrow
     // example: "2 pm" -> soonest 14:00:00 alarm
     // example: "2.30 pm" -> soonest 14:30:00 alarm
     // example: "2.30.15 pm" -> soonest 14:30:15 alarm
     // example: "3pm" -> soonest 15:00:00 alarm
-    // TODO, integrate this into ClockTimeColon with regex capture somehow similar to ShortDuration
+    QRegularExpression reClockTime = QRegularExpression(
+                "^[0-9]+(([:.])[0-9][0-9])?(\\2[0-9][0-9])? *(am|pm)$"
+    );
+    qDebug() << Timer::input << "; ctc =" << reClockTime.match(Timer::input).hasMatch();
 
-    // now go through and check if the input matches any supported format...
+    // now go through and check if the input matches any supported format
     if (reMinuteOnlyDuration.match(Timer::input).hasMatch())
     {
         Timer::valid = true;
@@ -97,7 +95,7 @@ Timer::Timer(QString input)
     {
         Timer::valid = true;
         Timer::type = TimerType::duration;
-        // initialize timer data to 0, we're incrementing this later
+        // initialize timer data to 0, we'll increment it later
         Timer::totalHour = 0;
         Timer::totalMinute = 0;
         Timer::totalSecond = 0;
@@ -149,10 +147,10 @@ Timer::Timer(QString input)
             inputRemainingMatch = reUnitDuration.match(inputRemaining);
         }
     }
-    else if (reClockTimeColon.match(Timer::input).hasMatch())
+    else if (reClockTime.match(Timer::input).hasMatch())
     {
         // cut into time and am/pm sections
-        QStringList subTimeStrs = Timer::input.left(Timer::input.length()-2).simplified().split(":");
+        QStringList subTimeStrs = Timer::input.left(Timer::input.length()-2).simplified().split(QRegularExpression("[:.]"));
         QString subAmPm = Timer::input.right(2);
         // parse subTime into actual numbers
         quint64 subTimes [3] = { 0, 0, 0 };
@@ -171,7 +169,7 @@ Timer::Timer(QString input)
                 (subTimes[2] >= 0) and (subTimes[2] <= 59))
         {
             // the timestamp is valid!
-            // normalize the time to 24-hour (hour in 0-23 range) style...
+            // normalize the time to 24-hour (hour in 0-23 range) style
             quint64 newHour = subTimes[0];
             if (subAmPm.toLower() == "pm")
             {
@@ -195,16 +193,6 @@ Timer::Timer(QString input)
             Timer::construct_invalid();
         }
     }
-//    else if (false)
-//    {
-//        // TODO
-//        Timer::valid = true;
-//        Timer::type = TimerType::duration;
-//        double numMinutes = Timer::input.toDouble();
-//        Timer::totalHours = 0;
-//        Timer::totalMinutes = qFloor(numMinutes); // Timer::input.toULongLong();
-//        Timer::totalSeconds = qFloor(60 * (numMinutes - Timer::totalMinutes));
-//    }
     else
     {
         // invalid input
@@ -225,7 +213,7 @@ void Timer::construct_invalid()
 
 void Timer::construct_finish()
 {
-    // do the constructor stuff that always needs to be done!
+    // make sure the base clock and total info are both matching up
     QTime currentTime = QTime::currentTime();
     // do handling of duration vs alarm timertype
     if (Timer::type == TimerType::duration)
@@ -252,6 +240,7 @@ void Timer::construct_finish()
         Timer::totalMinute = 0;
         Timer::totalSecond = secsDifference;
     }
+
     // make sure the totalHours, totalMinutes, and totalSeconds are normalized
     if (Timer::totalSecond >= 60)
     {
@@ -263,6 +252,7 @@ void Timer::construct_finish()
         Timer::totalHour = Timer::totalHour + qFloor(Timer::totalMinute / 60);
         Timer::totalMinute = Timer::totalMinute % 60;
     }
+
     // now set the common fields
     Timer::isStarted = false;
     Timer::isRunning = false;
