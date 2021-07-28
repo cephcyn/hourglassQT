@@ -24,7 +24,7 @@ Timer::Timer(QString input)
     QRegularExpression reMinuteOnlyDuration = QRegularExpression(
                 "^[0-9]+$"
     );
-    qDebug() << Timer::input << "; mo =" << reMinuteOnlyDuration.match(Timer::input).hasMatch();
+    qDebug() << Timer::input << "; mod =" << reMinuteOnlyDuration.match(Timer::input).hasMatch();
     // short form duration mm:ss, hh:mm:ss, mm.ss, hh.mm.ss
     // example: "2:40" -> 0:02:40 duration
     // example: "132:03:25" -> 132:03:25 duration
@@ -36,20 +36,18 @@ Timer::Timer(QString input)
     qDebug() << Timer::input << "; sd =" << reShortDuration.match(Timer::input).hasMatch();
     // specified units with seconds/seconds/secs/sec/s, minutes/minute/mins/min/m, hours/hour/hrs/hr/h
     // can take decimal input as well
+    // also can take combined units using multiple of above timespans
     // example: "30 seconds" -> 0:00:30 duration
     // example: "5 m" -> 0:05:00 duration
     // example: "10.5h" -> 10:30:00 duration
-    // TODO add support for days/d, weeks/w, months/mo, years/y ?
-    // TODO implement fully
-    QRegularExpression reUnitDuration = QRegularExpression(
-                "^([0-9]*\\.?[0-9]+) *(seconds|second|secs|sec|s|minutes|minute|mins|min|m|hours|hour|hrs|hr|h)$"
-    );
-    qDebug() << Timer::input << "; ud =" << reUnitDuration.match(Timer::input).hasMatch();
-    // combined units using multiple of above timespans
     // example: "5 minutes 20 seconds" -> 0:05:20 duration
     // example: "7 h 15.5 m" -> 7:15:30 duration
     // example: "2h2m2s" -> 2:02:02 duration
-    // TODO
+    // TODO add support for days/d, weeks/w, months/mo, years/y ?
+    QRegularExpression reUnitDuration = QRegularExpression(
+                "^(([0-9]*\\.?[0-9]+) *(seconds|second|secs|sec|s|minutes|minute|mins|min|m|hours|hour|hrs|hr|h) *)+$"
+    );
+    qDebug() << Timer::input << "; ud =" << reUnitDuration.match(Timer::input).hasMatch();
     // clock time (using :) with am/pm, soonest time that matches today or tomorrow
     // example: "2 pm" -> soonest 14:00:00 alarm
     // example: "2:30 pm" -> soonest 14:30:00 alarm
@@ -99,34 +97,56 @@ Timer::Timer(QString input)
     {
         Timer::valid = true;
         Timer::type = TimerType::duration;
-        // parse input into the number and unit sections
-        QString subNum = reUnitDuration.match(Timer::input).captured(1);
-        QString subUnit = reUnitDuration.match(Timer::input).captured(2);
-        double doubleNum = subNum.toDouble();
-        qDebug() << "unitduration" << doubleNum << subUnit;
-        if (QRegularExpression("^(seconds|second|secs|sec|s)$").match(subUnit).hasMatch())
+        // initialize timer data to 0, we're incrementing this later
+        Timer::totalHour = 0;
+        Timer::totalMinute = 0;
+        Timer::totalSecond = 0;
+        // start parsing the input chunks
+        QString inputRemaining = Timer::input;
+        QRegularExpressionMatch inputRemainingMatch = reUnitDuration.match(inputRemaining);
+        while (inputRemainingMatch.hasMatch())
         {
-            // passed seconds
-            Timer::totalHour = 0;
-            Timer::totalMinute = 0;
-            Timer::totalSecond = qFloor(doubleNum);
-        }
-        else if (QRegularExpression("^(minutes|minute|mins|min|m)$").match(subUnit).hasMatch())
-        {
-            // passed minutes
-            Timer::totalHour = 0;
-            Timer::totalMinute = qFloor(doubleNum);
-            doubleNum = 60 * (doubleNum - Timer::totalMinute); // convert to seconds
-            Timer::totalSecond = qFloor(doubleNum);
-        }
-        else if (QRegularExpression("^(hours|hour|hrs|hr|h)$").match(subUnit).hasMatch())
-        {
-            // passed hours
-            Timer::totalHour = qFloor(doubleNum);
-            doubleNum = 60 * (doubleNum - Timer::totalHour); // convert to minutes
-            Timer::totalMinute = qFloor(doubleNum);
-            doubleNum = 60 * (doubleNum - Timer::totalMinute); // convert to seconds
-            Timer::totalSecond = qFloor(doubleNum);
+            // captured(1) is the entire rightmost time/unit chunk
+            // captured(2) is the rightmost number
+            // captured(3) is the rightmost unit
+            // parse rightmost chunk into the number and unit sections
+            QString subNum = inputRemainingMatch.captured(2);
+            QString subUnit = inputRemainingMatch.captured(3);
+            double doubleNum = subNum.toDouble();
+            // take the number of units and turn them into duration info
+            if (QRegularExpression("^(seconds|second|secs|sec|s)$").match(subUnit).hasMatch())
+            {
+                // unit chunk describes seconds
+                quint64 chunkSecond = qFloor(doubleNum);
+                // increment timer total data
+                Timer::totalSecond = Timer::totalSecond + chunkSecond;
+            }
+            else if (QRegularExpression("^(minutes|minute|mins|min|m)$").match(subUnit).hasMatch())
+            {
+                // unit chunk describes minutes
+                quint64 chunkMinute = qFloor(doubleNum);
+                doubleNum = 60 * (doubleNum - chunkMinute); // convert to seconds
+                quint64 chunkSecond = qFloor(doubleNum);
+                // increment timer total data
+                Timer::totalMinute = Timer::totalMinute + chunkMinute;
+                Timer::totalSecond = Timer::totalSecond + chunkSecond;
+            }
+            else if (QRegularExpression("^(hours|hour|hrs|hr|h)$").match(subUnit).hasMatch())
+            {
+                // unit chunk describes hours
+                quint64 chunkHour = qFloor(doubleNum);
+                doubleNum = 60 * (doubleNum - chunkHour); // convert to minutes
+                quint64 chunkMinute = qFloor(doubleNum);
+                doubleNum = 60 * (doubleNum - chunkMinute); // convert to seconds
+                quint64 chunkSecond = qFloor(doubleNum);
+                // increment timer total data
+                Timer::totalHour = Timer::totalHour + chunkHour;
+                Timer::totalMinute = Timer::totalMinute + chunkMinute;
+                Timer::totalSecond = Timer::totalSecond + chunkSecond;
+            }
+            // remove the rightmost chunk and repeat...
+            inputRemaining = inputRemaining.left(inputRemaining.length()-inputRemainingMatch.captured(1).length());
+            inputRemainingMatch = reUnitDuration.match(inputRemaining);
         }
     }
     else if (reClockTimeColon.match(Timer::input).hasMatch())
