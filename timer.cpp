@@ -201,19 +201,9 @@ Timer::Timer(QString input)
     Timer::construct_finish();
 }
 
-void Timer::construct_invalid()
+void Timer::normalize()
 {
-    // fill in details that describe this timer as invalid
-    Timer::valid = false;
-    Timer::type = TimerType::duration;
-    Timer::totalHour = 0;
-    Timer::totalMinute = 0;
-    Timer::totalSecond = 0;
-}
-
-void Timer::construct_finish()
-{
-    // make sure the base clock and total info are both matching up
+    // make sure the base clock* and total* fields are matching up
     QTime currentTime = QTime::currentTime();
     // do handling of duration vs alarm timertype
     if (Timer::type == TimerType::duration)
@@ -252,7 +242,22 @@ void Timer::construct_finish()
         Timer::totalHour = Timer::totalHour + qFloor(Timer::totalMinute / 60);
         Timer::totalMinute = Timer::totalMinute % 60;
     }
+}
 
+void Timer::construct_invalid()
+{
+    // fill in details that describe this timer as invalid
+    Timer::valid = false;
+    Timer::type = TimerType::duration;
+    Timer::totalHour = 0;
+    Timer::totalMinute = 0;
+    Timer::totalSecond = 0;
+}
+
+void Timer::construct_finish()
+{
+    // normalize the timer data
+    Timer::normalize();
     // now set the common fields
     Timer::isStarted = false;
     Timer::isRunning = false;
@@ -275,6 +280,9 @@ void Timer::trigger_start()
     {
         return;
     }
+    // normalize the timer origin data
+    Timer::normalize();
+    // update timer status data
     Timer::remainHour = Timer::totalHour;
     Timer::remainMinute = Timer::totalMinute;
     Timer::remainSecond = Timer::totalSecond;
@@ -310,6 +318,9 @@ void Timer::trigger_reset()
     {
         return;
     }
+    // normalize the timer origin data
+    Timer::normalize();
+    // update timer status data
     Timer::isStarted = false;
     Timer::isRunning = false;
     Timer::isFinished = false;

@@ -52,6 +52,7 @@ private:
     quint64 remainMinute;
     quint64 remainSecond;
 
+    void normalize();
     void construct_invalid();
     void construct_finish();
 };
