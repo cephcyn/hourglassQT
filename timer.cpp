@@ -61,6 +61,10 @@ Timer::Timer(QString input)
                 "^[0-9]+(([:.])[0-9][0-9])?(\\2[0-9][0-9])? *(am|pm)$"
     );
     qDebug() << Timer::input << "; ctc =" << reClockTime.match(Timer::input).hasMatch();
+    // TODO be able to input 24h format time of day somehow?
+    // TODO be able to input date somehow?
+    // TODO be able to input date via weekday label somehow?
+    // TODO be able to input a combination of date and time somehow?
 
     // now go through and check if the input matches any supported format
     if (reMinuteOnlyDuration.match(Timer::input).hasMatch())
@@ -165,8 +169,8 @@ Timer::Timer(QString input)
         }
         // check if the user-passed timestamp actually makes sense
         if ((subTimes[0] >= 1) and (subTimes[0] <= 12) and
-                (subTimes[1] >= 0) and (subTimes[1] <= 59) and
-                (subTimes[2] >= 0) and (subTimes[2] <= 59))
+                (subTimes[1] <= 59) and
+                (subTimes[2] <= 59))
         {
             // the timestamp is valid!
             // normalize the time to 24-hour (hour in 0-23 range) style

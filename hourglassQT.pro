@@ -31,3 +31,9 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+# Customized deployment rules
+# remove debug output in release build
+CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
+# let ubuntu run executable from gui
+QMAKE_LFLAGS += -no-pie

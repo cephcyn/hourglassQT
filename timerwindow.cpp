@@ -13,7 +13,6 @@ TimerWindow::TimerWindow(QWidget *parent)
     TimerWindow::timer = new Timer();
     TimerWindow::qtimer = new QTimer(this);
     connect(TimerWindow::qtimer, &QTimer::timeout, this, &TimerWindow::update_timer);
-    // TODO figure out how to get the timer to work with toggle, reset
 }
 
 TimerWindow::~TimerWindow()
@@ -26,7 +25,7 @@ TimerWindow::~TimerWindow()
 void TimerWindow::on_inputTime_returnPressed()
 {
     // clean up previous window state
-    // TODO there's gotta be a cleaner way to do this...
+    // TODO there's gotta be a cleaner way to do this?
     TimerWindow::ui->pushToggle->setText("Start");
     TimerWindow::ui->progressBar->setMaximum(1);
     TimerWindow::ui->progressBar->setValue(0);
@@ -56,7 +55,6 @@ void TimerWindow::update_timer()
 
 void TimerWindow::rerender()
 {
-    // TODO clean text display up?
     if (! TimerWindow::timer->is_valid())
     {
         // update progressbar to invalid state
@@ -112,8 +110,8 @@ void TimerWindow::rerender()
     }
     else
     {
-        TimerWindow::ui->pushToggle->setText("Start");
         // update progressbar to non-running state
+        TimerWindow::ui->pushToggle->setText("Start");
         TimerWindow::ui->progressBar->setMaximum(1);
         TimerWindow::ui->progressBar->setValue(0);
         TimerWindow::ui->progressBar->setFormat("");
